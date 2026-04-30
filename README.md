@@ -2,23 +2,23 @@
 
 Place workflow files in the `.github/workflows/` folder. Files must be valid YAML and use the `.yml` or `.yaml` extension.
 
-## Basic structure
+## 1. Basic structure
 
 1. name — Human-friendly workflow name
 2. on — Triggers (events) that start the workflow
 3. jobs — One or more jobs to run
 4. steps — Ordered steps inside each job
 
-## Example: minimal workflow header
+## 2. Example: minimal workflow header
 
 ```yaml
 name: Example workflow
 on: push
 ```
 
-## Common triggers
+## 3. Common triggers
 
-### - Push to branches
+### 3.1 Push to branches
 
 ```yaml
 on:
@@ -27,14 +27,14 @@ on:
       - main
 ```
 
-### - Manual dispatch (run from Actions UI)
+### 3.2 Manual dispatch (run from Actions UI)
 
 ```yaml
 on:
  workflow_dispatch: {}
 ```
 
-### - Pull request events ( event activity types)
+### 3.3 Pull request events ( event activity types)
 
 ```yaml
 on:
@@ -42,7 +42,7 @@ on:
   types: [opened, synchronize]
 ```
 
-### - Pull request events ( event filters)
+### 3.4 Pull request events ( event filters)
 
 ```yaml
 on:
@@ -54,7 +54,7 @@ on:
 
 ```
 
-### - Cancel a workflow by commit messages
+### 3.5 Cancel a workflow by commit messages
 
 ```yaml
    [skip ci]
@@ -64,9 +64,9 @@ on:
    [actions skip]
 ```
 
-## Artifacts
+## 4. Artifacts
 
-### Create a step in job with the action
+### 4.1 Create a step in job with the action
 
 ```yaml
 steps:
@@ -77,7 +77,7 @@ steps:
       path: dist #after npm build, use dist folder as artifact for the following steps
 ```
 
-### Use artifact in anohter job
+### 4.2 Use artifact in anohter job
 
 ```yaml
 steps:
@@ -87,7 +87,7 @@ steps:
       name: dist-artifact
 ```
 
-## Outputs
+## 5. Outputs
 
 A step creates and output, the in outputs section, we get hold of this output and may be use in anoher step or job.
 Use 'needs' to find the correct output reference.
@@ -109,7 +109,7 @@ jobs:
 
 ```
 
-## Caching dependencies
+## 6. Caching dependencies
 
 Cache the downloaded packages in .npm folder so that npm install will not download them again.
 
@@ -146,7 +146,7 @@ jobs:
 
 ```
 
-## Environment variables
+## 7. Environment variables
 
 In node environment we define and use them as process.env.DB_NAME
 
@@ -181,7 +181,7 @@ jobs:
         run: echo ${{ env.PORT }} #use env variable
 ```
 
-## Secrets
+## 8. Secrets
 
 Create secret in repo settings. Use them in workflow mostly in env values.
 When we expose it with echo, github does not print the secret values but ***
@@ -197,7 +197,7 @@ When we expose it with echo, github does not print the secret values but ***
         run: echo name: ${{ env.DB_NAME }} pass: ${{ env.DB_PASSWORD }} 
 ```
 
-### Using environments for secrets
+### 8.1 Using environments for secrets
 
 If we need the save env variable to have different values for different environments,
 they should be stored in environment secrets. If the value is same for all environments
