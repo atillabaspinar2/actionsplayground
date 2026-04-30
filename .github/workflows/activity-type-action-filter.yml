@@ -1,0 +1,24 @@
+name: Activity Type Action and Filter Workflow
+on:
+  pull_request:
+    types: # activity type
+      - opened
+      - synchronize
+    branches: #event filter
+      - main
+  push:
+    branches: # event filter
+      - main
+      - "release/*" # only one slash is allowed, so it will not trigger for 'release/feature/xyz'
+      - "feat/**" # double asterisk allows for multiple slashes, so it will trigger for 'feat/feature/xyz'
+jobs:
+  pr_job:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: pr_details
+        run: echo "pr details ${{  toJson(github.event) }}"
+  push_job:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: push_details
+        run: echo "push details ${{  toJson(github.event) }}"
