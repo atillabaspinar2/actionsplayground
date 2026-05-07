@@ -215,3 +215,106 @@ To use environment for getting a version of the secret
       - name: get env with expression
         run: echo name: ${{ env.DB_NAME }} pass: ${{ env.DB_PASSWORD }} 
 ```
+
+## 9 Controlling work flow
+
+### 9.1 If
+
+```yaml
+
+   run_job:
+    runs-on: ubuntu-22.04
+    environment: testing #define a testing environment in settings and create secrets in that env.
+    env: 
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - name: get env with expression
+        id: get-env
+        run: echo name: ${{ env.DB_NAME }} pass: ${{ env.DB_PASSWORD }} 
+      - name: try
+        if: failure() &&  steps.get-env.outcome == "failure"
+        # you need failure() becuse if the previous step failes the execution stops without cheking the if condition
+        run: echo "failed
+```
+
+### 9.2 continue_on_error
+
+### 9.3 Matrix: run same jobs with different environments
+
+### 9.4 Reuse worflows passing inputs and getting outputs like functions
+
+## 10. Containers instead of runner images
+
+### 10.1 containers
+
+A container is optional. It can be useful to save process, like playwright container on top of ubuntu
+so that the workflow does not have to install browser images.
+
+```yaml
+  name: workflow1
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      container: node:16
+      steps:
+      ...
+
+  # or
+  name: workflow1
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      container: 
+      image: node:16
+      env: #this is container env, not github actions env
+        MONGODB_USER: ${{ secrets.MONGODB_USER }}
+        MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+```
+
+### 10.2 Service containers
+
+ It is attached to a job. For example we want to run a test job for backend. But backend needs a db service that is created and destroyed during the test process.
+
+```yaml
+ # WITH CONTAINER
+  name: workflow1
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      container: node:16
+      env:
+        MONGODB_USER: root #must match to below
+        MONGODB_PASSWORD: example
+        MONGODB_CLUSTER_ADDRESS: mongodb_service # in case of container service label can be used 
+      services:
+        mongodb_service:
+          image: mongo:5.0
+          env:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+      steps:
+      ...
+
+ # NO CONTAINER, direclty on runner
+  name: workflow1
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      env:
+        MONGODB_USER: root #must match to below
+        MONGODB_PASSWORD: example
+        MONGODB_CLUSTER_ADDRESS: 127.0.0.1:27017 # in case of no container use ip and port
+      services:
+        mongodb_service:
+          image: mongo:5.0
+          ports:
+            - 27017:27017 # this is needed
+          env:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+      steps:
+      ...
+
+
+
