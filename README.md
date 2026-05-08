@@ -435,4 +435,39 @@ Now we need to use this output in another step
             caching: false
         - name: Output info
           run: echo "Cache ${{ steps.load-cache.outputs.use-cache }}"
-````
+```
+
+## 11.2 JS Actions
+
+action.yml file and js file is needed
+
+```yaml
+name: "Deploy to S3 Action"
+description: "A GitHub Action to deploy files to an S3 bucket."
+runs:
+  using: "node12"
+  main: "index.js"
+outputs:
+  web_url: ${{ steps.upload.outputs.web_url }}
+inputs:
+  # bucket name etc.
+env: 
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+```
+
+note: run npm init next to index.js. node_modules should be commited. check .gitignore
+in the root, not to ignore anything here
+
+```js
+const core = require("@actions/core");
+const exec = require("@actions/exec");
+
+// how to get input from yaml file
+  const bucketName = core.getInput("bucket_name", { required: true });
+
+  // how to generate output to workflow
+  core.setOutput("web_url", bucketName);
+
+```

@@ -1,0 +1,29 @@
+name: "Deploy to S3 Action"
+description: "A GitHub Action to deploy files to an S3 bucket."
+runs:
+  using: "node12"
+  main: "index.js"
+  pre: "npm install" # optional pre-step to install dependencies
+  post: "npm test" # optional post-step to run tests after deployment
+
+inputs:
+  bucket:
+    description: "The name of the S3 bucket to deploy to."
+    required: true
+  region:
+    description: "The AWS region where the S3 bucket is located."
+    required: true
+  access_key_id:
+    description: "AWS Access Key ID with permissions to access the S3 bucket."
+    required: true
+  secret_access_key:
+    description: "AWS Secret Access Key with permissions to access the S3 bucket."
+    required: true
+  source_dir:
+    description: "The directory containing the files to be deployed to S3."
+    required: true
+  destination_dir:
+    description: "The destination directory in the S3 bucket where files will be uploaded."
+    required: false
+    default: ""
+    cache_control: "max-age=31536000, public"
