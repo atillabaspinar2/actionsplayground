@@ -471,3 +471,26 @@ const exec = require("@actions/exec");
   core.setOutput("web_url", bucketName);
 
 ```
+
+## 11.3 Docker Actions
+
+action.yml file and Dockerfile file is needed.
+We also have a file for running the commands in any language that docker image supports:
+pythong, java etc.
+AWS provides libraries to get input, deploy etc. for those languages.
+for example, for python boto3 library is used for aws s3
+
+inputs in yaml file are passed to Docker environment with a prefix INPUT_
+eg.: INPUT_BUCKET_NAME
+
+```yaml
+name: "Deploy to S3 Action with Docker Action"
+description: "A GitHub Action to deploy files to an S3 bucket."
+runs:
+  using: "docker"
+  image: Dockerfile #this lives in the same place as action.yml
+inputs:
+  bucket_name: ${{env.BUCKET_NAME}}
+outputs:
+  web_url: ${{ steps.upload.outputs.web_url }}
+```
