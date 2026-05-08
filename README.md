@@ -240,9 +240,15 @@ To use environment for getting a version of the secret
 
 ### 9.2 continue_on_error
 
+TODO
+
 ### 9.3 Matrix: run same jobs with different environments
 
+TODO
+
 ### 9.4 Reuse worflows passing inputs and getting outputs like functions
+
+TODO
 
 ## 10. Containers instead of runner images
 
@@ -315,6 +321,118 @@ so that the workflow does not have to install browser images.
             MONGO_INITDB_ROOT_PASSWORD: example
       steps:
       ...
+```
 
+## 11 - Custom actions
 
+### 11.1 - Composite actions
 
+It has to be in action.yml file
+
+```yaml
+  name: "action name"
+  description: "action description"
+  runs:
+    using: "composite"
+    steps: #now we just copy the steps that were repeated in workflows
+      - name: step1
+        id: cache
+        action: actions/cache@v4
+        with:
+          key: cache-npm-${{hashFiles('**/package-lock.json')}}
+          paths: ~/.npm
+      - name: install
+        run: npm ci 
+```
+
+#### 11.1.2 - Compositon action input
+
+It has to be in action.yml file
+
+```yaml
+ #inside .github/actions/chaching/action.yml
+  name: "action name"
+  description: "action description"
+  inputs:
+    caching: #name of the input
+      description: 'whether caching required or not'
+      default: false
+      required: true
+    another-action: #...
+
+  runs:
+    using: "composite"
+    steps: #now we just copy the steps that were repeated in workflows
+      - name: cache
+        if: ${{ inputs.caching == 'true' }} # inputs.cachinh == 'true'
+        id: cache
+        action: actions/cache@v4
+        with:
+          key: cache-npm-${{hashFiles('**/package-lock.json')}}
+          paths: ~/.npm
+      - name: install
+        if: steps.cache.output.cache_hit == 'false' || ${{ inputs.caching == 'true' }}
+        run: npm ci 
+```
+
+```yaml
+ #how to use it workflow
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      steps:
+        - name: load cache
+          uses: ./.github/actions/chaching #must be relative to project root.
+          with:
+            caching: true
+```
+
+#### 11.1.3 - Compositon action output
+
+It has to be in action.yml file
+
+```yaml
+ #inside .github/actions/chaching/action.yml
+  name: "action name"
+  description: "action description"
+  inputs:
+    caching: #name of the input
+      description: 'whether caching required or not'
+      default: false
+      required: true
+  outputs:
+    use-cache:
+      description: 'whether caching required or not'
+      value: ${{ steps.install.outputs.cache }}. 
+
+  runs:
+    using: "composite"
+    steps:
+      - name: cache
+        if: ${{ inputs.caching == 'true' }} #or just inputs.caching == 'true'
+        id: cache
+        action: actions/cache@v4
+        with:
+          key: cache-npm-${{hashFiles('**/package-lock.json')}}
+          paths: ~/.npm
+
+      - name: install
+        run: |
+          npm ci 
+          echo "cache='${{ inputs.caching }}'" >> ${GITHUB_OUTPUT} #for demo, we set output to input
+````
+
+Now we need to use this output in another step
+
+```yaml
+  jobs:
+    build:
+      runs-on: ubuntu-22.04
+      steps:
+        - name: load cache
+          id: load-cache
+          uses:
+            caching: false
+        - name: Output info
+          run: echo "Cache ${{ steps.load-cache.outputs.use-cache }}"
+````
